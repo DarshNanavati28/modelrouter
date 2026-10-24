@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f7fb">
+  <meta name="description" content="Route each AI request by hard latency, cost, capability, and context limits.">
+  <title>ModelRouter · Routing control plane</title>
+  <link rel="stylesheet" href="/src/styles.css">
+  <script type="module" src="/src/app.js"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="#overview" aria-label="ModelRouter home">
+        <span class="brand-mark"><i></i><i></i><i></i></span>
+        <span class="brand-name">model<span>router</span></span>
+      </a>
+
+      <div class="workspace-switcher">
+        <span class="workspace-avatar">MR</span>
+        <span class="workspace-copy"><strong>Routing lab</strong><small>Personal workspace</small></span>
+        <span class="chevron">⌄</span>
+      </div>
+
+      <p class="nav-label">WORKSPACE</p>
+      <nav class="side-nav" aria-label="Main navigation">
+        <a class="nav-item active" href="#overview"><span class="nav-icon">◫</span><span>Overview</span></a>
+        <a class="nav-item" href="#routing-lab"><span class="nav-icon">⌁</span><span>Routing lab</span><span class="nav-live-dot"></span></a>
+        <a class="nav-item" href="#model-pool"><span class="nav-icon">◈</span><span>Model pool</span></a>
+        <a class="nav-item" href="#activity"><span class="nav-icon">▤</span><span>Request log</span></a>
+      </nav>
+
+      <div class="sidebar-spacer"></div>
+
+      <section class="sidebar-health" aria-label="Router status">
+        <div class="health-heading"><span class="status-dot"></span><span>ROUTER OPERATIONAL</span></div>
+        <p>Strict policy checks are active. Invalid routes are blocked before inference.</p>
+        <div class="health-meta"><span>MODE</span><strong id="sidebarMode">SIMULATION</strong></div>
+      </section>
+
+      <a class="sidebar-help" href="#how-it-works"><span class="help-mark">?</span><span>How routing works</span><span class="help-arrow">↗</span></a>
+      <div class="sidebar-foot"><span class="foot-mark">MR</span><span>ModelRouter</span><span class="version-tag">v1.0</span></div>
+    </aside>
+
+    <main class="main-area" id="overview">
+      <header class="topbar">
+        <div class="breadcrumb"><span>Workspace</span><span class="crumb-sep">/</span><strong>Overview</strong></div>
+        <div class="topbar-actions">
+          <div class="environment-pill"><span class="env-dot"></span><span id="modeLabel">SIMULATOR</span></div>
+          <button class="button button-connect" id="connectButton" type="button"><span class="connect-glyph">↗</span><span id="connectLabel">Connect live</span></button>
+          <button class="avatar-button" type="button" aria-label="Demo workspace">D</button>
+        </div>
+      </header>
+
+      <div class="page-content">
+        <section class="page-heading">
+          <div>
+            <div class="eyebrow"><span class="eyebrow-line"></span>MODEL ROUTING CONTROL PLANE</div>
+            <h1>Put every request<br class="mobile-break"> on the right path.</h1>
+            <p class="page-subtitle">Balance cost, latency, and capability. Keep every hard limit intact.</p>
+          </div>
+          <div class="policy-state"><span class="policy-shield">✓</span><span><strong>Strict mode</strong><small>Constraint relaxation disabled</small></span></div>
+        </section>
+
+        <section class="stats-grid" aria-label="Session metrics">
+          <article class="stat-card">
+            <div class="stat-top"><span class="stat-label">REQUESTS ROUTED</span><span class="stat-icon icon-blue">↗</span></div>
+            <div class="stat-value" id="statRequests">0</div>
+            <div class="stat-foot"><span class="stat-caption">This browser session</span><span class="stat-mini-line blue-line"></span></div>
+          </article>
+          <article class="stat-card">
+            <div class="stat-top"><span class="stat-label">ESTIMATED SPEND</span><span class="stat-icon icon-green">$</span></div>
+            <div class="stat-value" id="statCost">$0.0000</div>
+            <div class="stat-foot"><span class="stat-caption">Within request budgets</span><span class="stat-mini-line green-line"></span></div>
+          </article>
+          <article class="stat-card">
+            <div class="stat-top"><span class="stat-label">P95 LATENCY</span><span class="stat-icon icon-violet">◷</span></div>
+            <div class="stat-value" id="statLatency">—<small> ms</small></div>
+            <div class="stat-foot"><span class="stat-caption">End-to-end, current session</span><span class="stat-mini-line violet-line"></span></div>
+          </article>
+          <article class="stat-card">
+            <div class="stat-top"><span class="stat-label">ENDPOINT FAILURES</span><span class="stat-icon icon-amber">⇄</span></div>
+            <div class="stat-value" id="statFailovers">0</div>
+            <div class="stat-foot"><span class="stat-caption"><span id="statFailoverCaption">0 safe failovers</span><span class="stat-mini-line amber-line"></span></div>
+          </article>
+        </section>
+
+        <div class="workbench-grid">
+          <section class="panel request-panel" id="routing-lab">
+            <div class="panel-heading">
+              <div>
+                <div class="section-kicker"><span class="kicker-index">01</span> ROUTING LAB</div>
+                <h2>Build a request</h2>
+                <p>Set the request and its non-negotiable limits.</p>
+              </div>
+              <span class="demo-chip"><span class="demo-chip-dot"></span>LIVE SIMULATOR</span>
+            </div>
+
+            <div class="scenario-row">
+              <span class="field-caption">START WITH A SCENARIO</span>
+              <div class="scenario-list" role="group" aria-label="Request scenarios">
+                <button type="button" class="scenario-button selected" data-scenario="quick">Quick fact</button>
+                <button type="button" class="scenario-button" data-scenario="contract">Long document</button>
+                <button type="button" class="scenario-button" data-scenario="code">Code review</button>
+                <button type="button" class="scenario-button" data-scenario="budget">Tight budget</button>
+              </div>
+            </div>
+
+            <label class="field-label" for="promptInput"><span>REQUEST CONTENT</span><span class="token-readout"><span class="token-dot"></span><span id="tokenCount">0</span> estimated input tokens</span></label>
+            <div class="prompt-wrap">
+              <textarea id="promptInput" rows="4" maxlength="20000" spellcheck="false" aria-describedby="promptHint" placeholder="Describe the task to route...">What is 19 × 23? Show the arithmetic briefly.</textarea>
+              <span class="prompt-corner">PROMPT</span>
+            </div>
+            <div class="prompt-hint" id="promptHint">The prompt is estimated locally to set a safe context requirement.</div>
+
+            <div class="constraints-heading"><span class="field-caption">HARD CONSTRAINTS</span><span class="immutable-tag"><span>◆</span> NEVER RELAXED</span></div>
+            <div class="constraint-grid">
+              <label class="control-card">
+                <span class="control-title"><span>Maximum latency</span><span class="control-mark">↗</span></span>
+                <span class="control-value"><strong id="latencyValue">1,500</strong><small>ms</small></span>
+                <input id="latencyInput" type="range" min="100" max="4000" step="50" value="1500" aria-label="Maximum latency in milliseconds">
+                <span class="range-edge"><span>100 ms</span><span>4,000 ms</span></span>
+              </label>
+              <label class="control-card">
+                <span class="control-title"><span>Maximum cost</span><span class="control-mark">$</span></span>
+                <span class="control-value"><strong id="costValue">$0.0030</strong></span>
+                <input id="costInput" type="range" min="1" max="100" step="1" value="3" aria-label="Maximum cost in dollars">
+                <span class="range-edge"><span>$0.001</span><span>$0.100</span></span>
+              </label>
+              <label class="control-card select-card">
+                <span class="control-title"><span>Minimum capability</span><span class="control-mark">✧</span></span>
+                <span class="control-value select-value"><strong id="capabilityValue">Level 1</strong><span class="select-chevron">⌄</span></span>
+                <select id="capabilityInput" aria-label="Minimum model capability">
+                  <option value="1" selected>Level 1 — Simple</option>
+                  <option value="2">Level 2 — General</option>
+                  <option value="3">Level 3 — Skilled</option>
+                  <option value="4">Level 4 — Advanced</option>
+                  <option value="5">Level 5 — Expert</option>
+                </select>
+                <span class="control-helper">Request estimate can raise this floor.</span>
+              </label>
+              <label class="control-card select-card">
+                <span class="control-title"><span>Required context</span><span class="control-mark">▣</span></span>
+                <span class="control-value select-value"><strong id="contextValue">8K tokens</strong><span class="select-chevron">⌄</span></span>
+                <select id="contextInput" aria-label="Required context window">
+                  <option value="8192" selected>8K tokens</option>
+                  <option value="32768">32K tokens</option>
+                  <option value="65536">64K tokens</option>
+                  <option value="131072">128K tokens</option>
+                  <option value="262144">256K tokens</option>
+                  <option value="1048576">1M tokens</option>
+                </select>
+                <span class="control-helper">Includes estimated input + output.</span>
+              </label>
+            </div>
+
+            <div class="request-meta-row">
+              <label class="output-limit"><span class="field-caption">OUTPUT CAP</span>
+                <select id="outputInput" aria-label="Maximum output tokens">
+                  <option value="128">128 tokens</option>
+                  <option value="256" selected>256 tokens</option>
+                  <option value="512">512 tokens</option>
+                  <option value="1024">1,024 tokens</option>
+                  <option value="2048">2,048 tokens</option>
+                </select>
+              </label>
+              <label class="preference-control"><span class="field-caption">PREFERENCE</span>
+                <select id="preferenceInput" aria-label="Routing preference">
+                  <option value="cost" selected>Lowest cost</option>
+                  <option value="latency">Lowest latency</option>
+                  <option value="quality">Highest capability</option>
+                </select>
+              </label>
+              <div class="complexity-note" id="complexityNote"><span class="complexity-spark">✦</span><span><strong>Task estimate</strong><small id="complexityText">Level 1 · high confidence</small></span></div>
+            </div>
+
+            <div class="request-footer">
+              <div class="safety-caption"><span class="tiny-lock">▣</span><span>Only eligible models are ever attempted.</span></div>
+              <button type="button" class="button button-primary" id="runButton"><span id="runButtonText">Run simulation</span><span class="button-arrow">→</span></button>
+            </div>
+          </section>
+
+          <section class="panel decision-panel" aria-live="polite">
+            <div class="panel-heading decision-heading">
+              <div>
+                <div class="section-kicker"><span class="kicker-index">02</span> ROUTE DECISION</div>
+                <h2>Explainable by design</h2>
+                <p id="decisionSubtitle">Preview updates as constraints change.</p>
+              </div>
+              <button class="icon-button" type="button" id="rerunButton" aria-label="Refresh route preview" title="Refresh route preview">↻</button>
+            </div>
+
+            <div class="decision-result" id="decisionResult">
+              <div class="preview-state"><span class="preview-icon">⌁</span><div><strong>Ready to evaluate</strong><span>Choose a request, then run the router.</span></div></div>
+            </div>
+
+            <div class="trace-section">
+              <div class="trace-heading"><span>MODEL ELIGIBILITY</span><span class="trace-count" id="traceCount">0 / 7 eligible</span></div>
+              <div class="trace-list" id="traceList">
+                <div class="trace-empty">The router will show each check and rejection reason here.</div>
+              </div>
+            </div>
+
+            <div class="fallback-strip" id="fallbackStrip"><span class="fallback-icon">⇄</span><span><strong>Safe failover chain</strong><small>Only models passing every check can be used.</small></span><span class="fallback-count" id="fallbackCount">—</span></div>
+            <div class="decision-foot"><span class="strict-check">✓</span><span>Hard constraints are validated again on the server in live mode.</span></div>
+          </section>
+        </div>
+
+        <section class="panel model-panel" id="model-pool">
+          <div class="panel-heading model-panel-heading">
+            <div>
+              <div class="section-kicker"><span class="kicker-index">03</span> ENDPOINTS</div>
+              <h2>Model pool</h2>
+              <p>Adjust endpoint health and observed p95 latency to inspect how routing changes.</p>
+            </div>
+            <div class="catalog-note"><span class="catalog-sync" id="catalogDot"></span><span id="catalogSource">Snapshot catalog · refreshes when available</span><button id="refreshCatalog" type="button" class="text-button">Refresh</button></div>
+          </div>
+
+          <div class="model-table-wrap">
+            <table class="model-table">
+              <thead><tr>
+                <th>MODEL / PROVIDER</th><th>CAPABILITY</th><th>CONTEXT</th><th>EST. P95</th><th>INPUT / OUTPUT</th><th>ENDPOINT</th><th>NEXT RUN</th>
+              </tr></thead>
+              <tbody id="modelRows"></tbody>
+            </table>
+          </div>
+          <div class="model-table-foot"><span><span class="legend-dot green"></span>Online endpoints</span><span><span class="legend-dot gray"></span>Availability is operator-controlled in this demo</span><span>Prices refresh from OpenRouter when available</span></div>
+        </section>
+
+        <section class="panel activity-panel" id="activity">
+          <div class="panel-heading activity-heading">
+            <div>
+              <div class="section-kicker"><span class="kicker-index">04</span> OBSERVABILITY</div>
+              <h2>Recent decisions</h2>
+              <p>Request summaries stay in this page session and are not persisted.</p>
+            </div>
+            <button type="button" class="button button-quiet" id="clearActivity">Clear session</button>
+          </div>
+          <div class="activity-table-wrap">
+            <table class="activity-table">
+              <thead><tr><th>TIME</th><th>REQUEST</th><th>ROUTE</th><th>RESULT</th><th>COST</th><th>LATENCY</th></tr></thead>
+              <tbody id="activityRows"><tr><td colspan="6" class="empty-log">No requests yet. Run a simulation to create the first decision record.</td></tr></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="how-panel" id="how-it-works">
+          <div class="how-icon">✳</div>
+          <div><div class="section-kicker">THE ROUTING CONTRACT</div><h2>Safety first. Preference second.</h2><p>ModelRouter estimates input size and task difficulty, removes every endpoint that breaks a hard limit, then ranks the eligible set. If an attempt fails, the next model must pass the same checks and fit the remaining end-to-end budget.</p></div>
+          <div class="how-steps"><span><b>1</b> Estimate</span><span><b>2</b> Filter</span><span><b>3</b> Rank</span><span><b>4</b> Fail over safely</span></div>
+        </section>
+        <footer class="page-footer"><span>ModelRouter <span class="footer-sep">·</span> Demonstration build</span><span>Quality and latency tiers are operator estimates. Live price and context refresh from OpenRouter.</span></footer>
+      </div>
+    </main>
+  </div>
+
+  <dialog class="connect-dialog" id="connectDialog">
+    <form method="dialog" class="dialog-close-form"><button class="dialog-close" aria-label="Close">×</button></form>
+    <div class="dialog-mark">↗</div>
+    <div class="section-kicker">OPTIONAL LIVE MODE</div>
+    <h2>Connect an OpenRouter key</h2>
+    <p>Use your own key to send a real request through the same constraint checks. Without a key, the simulator remains fully usable.</p>
+    <label class="dialog-label" for="apiKeyInput">API KEY</label>
+    <div class="key-input-wrap"><input id="apiKeyInput" type="password" autocomplete="off" spellcheck="false" placeholder="sk-or-v1-…" aria-describedby="keyPrivacy"><button id="toggleKey" type="button" aria-label="Show key">Show</button></div>
+    <div class="privacy-note" id="keyPrivacy"><span>▣</span><span>Held in page memory only. Never stored in browser storage or included in the request log.</span></div>
+    <div class="dialog-actions"><button type="button" class="button button-quiet" id="cancelConnect">Cancel</button><button type="button" class="button button-primary" id="saveKey">Use key for this session <span class="button-arrow">→</span></button></div>
+    <div class="dialog-footnote">Requests are forwarded to OpenRouter. Do not send sensitive content unless your provider settings permit it.</div>
+  </dialog>
+
+  <div class="toast-region" id="toastRegion" aria-live="polite" aria-atomic="true"></div>
+</body>
+</html>
