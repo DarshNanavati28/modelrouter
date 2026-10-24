@@ -39,3 +39,8 @@ The Vercel deployment needs no secret configured: each user may enter their own 
 - \`api/route.js\`: server-side constraint validation, live request, and safe failover
 - \`server.js\`: zero-dependency local server
 - \`vercel.json\`: static and serverless deployment configuration
+
+
+## GitHub Pages demo
+
+The GitHub Pages workflow publishes only `index.html` and `src/` as a static simulator. The live catalog and inference API remain on Vercel; GitHub Pages does not run the server endpoints. On the Pages build, the live connection control is hidden and the included model snapshot is used.
