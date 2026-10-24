@@ -678,6 +678,7 @@ document.querySelectorAll(".nav-item").forEach(function (link) {
   });
 });
 
+updateMode();
 renderModelPool();
 updatePlan();
 renderStats();
