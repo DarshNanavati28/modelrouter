@@ -1,6 +1,8 @@
 import { MODELS } from "./models.js";
 import { evaluateRequest, estimateTokens, estimateComplexity, formatUsd } from "./engine.js";
 
+const isGitHubPages = window.location.hostname.endsWith(".github.io");
+
 const state = {
   models: MODELS.map(function (model) { return Object.assign({}, model); }),
   overrides: {},
@@ -9,7 +11,7 @@ const state = {
   currentPlan: null,
   lastExecution: null,
   running: false,
-  catalogSource: "Snapshot catalog · refreshes when available"
+  catalogSource: isGitHubPages ? "Snapshot catalog · live API runs on Vercel" : "Snapshot catalog · refreshes when available"
 };
 
 state.models.forEach(function (model) {
@@ -507,7 +509,8 @@ function updateMode() {
   const live = Boolean(state.apiKey);
   const pill = document.querySelector(".environment-pill");
   pill.classList.toggle("live", live);
-  el("modeLabel").textContent = live ? "LIVE KEY READY" : "SIMULATOR";
+  el("modeLabel").textContent = live ? "LIVE KEY READY" : (isGitHubPages ? "PAGES DEMO" : "SIMULATOR");
+  el("connectButton").style.display = isGitHubPages ? "none" : "";
   el("sidebarMode").textContent = live ? "LIVE / BYOK" : "SIMULATION";
   el("connectLabel").textContent = live ? "Disconnect live" : "Connect live";
   el("runButtonText").textContent = live ? "Send live request" : "Run simulation";
@@ -539,6 +542,14 @@ function renderPlanAfterCatalog() {
 async function refreshCatalog(showToast) {
   const refresh = el("refreshCatalog");
   refresh.disabled = true;
+  if (isGitHubPages) {
+    state.catalogSource = "Snapshot catalog · live API runs on Vercel";
+    el("catalogSource").textContent = state.catalogSource;
+    el("catalogDot").classList.remove("online");
+    refresh.disabled = false;
+    if (showToast) toast("GitHub Pages runs the simulator; live API endpoints run on Vercel.", "");
+    return;
+  }
   el("catalogSource").textContent = "Refreshing model metadata…";
   try {
     const response = await fetch("/api/models", { cache: "no-store" });
